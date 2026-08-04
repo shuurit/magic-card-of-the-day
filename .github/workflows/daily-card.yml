@@ -2,8 +2,12 @@ name: Post Magic Card of the Day
 
 on:
   schedule:
-    # 15:00 UTC daily (roughly 8am Pacific / 11am Eastern). Adjust as needed.
-    - cron: "0 15 * * *"
+    # 10am Mountain Time daily. GitHub Actions cron runs in fixed UTC and
+    # doesn't observe DST, so two rules approximate the wall-clock time:
+    # MDT (UTC-6) for Mar-Oct, MST (UTC-7) for Nov-Feb. Off by an hour during
+    # the ~1-week DST transition itself (early Mar / early Nov).
+    - cron: "0 16 * 3-10 *"
+    - cron: "0 17 * 11,12,1,2 *"
   workflow_dispatch: {}
 
 permissions:

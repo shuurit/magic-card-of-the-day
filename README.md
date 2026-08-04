@@ -52,16 +52,24 @@ successful post — so the next day's run sees the full history.
 
 ## Schedule
 
-Runs via GitHub Actions on a daily cron schedule, defined in
+Runs via GitHub Actions daily around 10am Mountain Time, defined in
 [`.github/workflows/daily-card.yml`](.github/workflows/daily-card.yml):
 
 ```yaml
 schedule:
-  - cron: "0 15 * * *"  # 15:00 UTC daily
+  - cron: "0 16 * 3-10 *"        # 10am MDT (UTC-6), March-October
+  - cron: "0 17 * 11,12,1,2 *"   # 10am MST (UTC-7), November-February
 ```
 
-- Edit the cron expression to change the time (GitHub Actions schedules are
-  always in UTC).
+GitHub Actions cron schedules run in fixed UTC and don't observe daylight
+saving, so two rules are used to approximate 10am Mountain time year-round.
+This will be off by an hour during the ~1-week DST transition itself (early
+March and early November), since the month boundary is only an approximation
+of the actual transition date (second Sunday in March / first Sunday in
+November).
+
+- Edit the cron expressions to change the time or switch to a fixed
+  single-offset schedule (GitHub Actions schedules are always in UTC).
 - You can also trigger a run manually from the Actions tab (or `gh workflow
   run daily-card.yml`) thanks to the `workflow_dispatch` trigger — handy for
   testing.
