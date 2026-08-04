@@ -2,7 +2,7 @@ name: Post Magic Card of the Day
 
 on:
   schedule:
-    # 15:00 UTC daily (~8am PT / 11am ET). Adjust to taste.
+    # 15:00 UTC daily (roughly 8am Pacific / 11am Eastern). Adjust as needed.
     - cron: "0 15 * * *"
   workflow_dispatch: {}
 
