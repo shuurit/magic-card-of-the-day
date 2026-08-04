@@ -2,7 +2,8 @@
 
 Fetches a random legal, non-token, non-joke card from Scryfall, avoids
 repeating any card posted within the last REPEAT_WINDOW_DAYS days (tracked
-in LOG_FILE), and posts it to Discord using the [[Card Name]] embed syntax.
+in LOG_FILE), and posts it to Discord as two separate messages: a greeting,
+followed by the [[!Card Name]] embed tag.
 """
 
 import json
@@ -40,10 +41,10 @@ MAX_FETCH_ATTEMPTS = 10
 API_RETRY_DELAY_SECONDS = 3
 WEBHOOK_RETRY_DELAY_SECONDS = 3
 
-MESSAGE_TEMPLATE = (
-    "This is Today's Magic Card of the Day!!! Enjoy fellow Spellcasters "
-    ":man_mage: [[!{card_name}]]"
+GREETING_MESSAGE = (
+    "This is Today's Magic Card of the Day!!! Enjoy fellow Spellcasters :man_mage:"
 )
+CARD_TAG_TEMPLATE = "[[!{card_name}]]"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -180,10 +181,17 @@ def main() -> int:
         return 1
 
     card_name = card["name"]
-    message = MESSAGE_TEMPLATE.format(card_name=card_name)
 
-    if not post_to_discord(webhook_url, message):
-        log.error("Failed to post '%s' to Discord after retry.", card_name)
+    if not post_to_discord(webhook_url, GREETING_MESSAGE):
+        log.error("Failed to post greeting message to Discord after retry.")
+        return 1
+
+    card_tag = CARD_TAG_TEMPLATE.format(card_name=card_name)
+    if not post_to_discord(webhook_url, card_tag):
+        log.error(
+            "Greeting posted, but failed to post '%s' card tag to Discord after retry.",
+            card_name,
+        )
         return 1
 
     save_posted_card(card_name)

@@ -11,14 +11,18 @@ that was posted within the last 60 days.
 2. Checks `posted_cards.json` for that card name within the repeat window. If
    it's a repeat, it draws again (up to 10 attempts) before giving up and
    logging an error.
-3. Posts to Discord in the format:
+3. Posts to Discord as two separate messages (two separate webhook calls):
 
    ```
-   This is Today's Magic Card of the Day!!! Enjoy fellow Spellcasters :man_mage: [[!Card Name]]
+   This is Today's Magic Card of the Day!!! Enjoy fellow Spellcasters :man_mage:
    ```
 
-   The `[[!Card Name]]` is left untouched — that's your Discord bot's
-   auto-embed syntax.
+   ```
+   [[!Card Name]]
+   ```
+
+   The `[[!Card Name]]` tag is sent on its own — that's your Discord bot's
+   auto-embed syntax, and it's left untouched.
 4. On a successful post, appends `{"name": ..., "date": ...}` to
    `posted_cards.json`.
 
