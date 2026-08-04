@@ -18,11 +18,12 @@ that was posted within the last 60 days.
    ```
 
    ```
-   [[!Card Name]]
+   https://scryfall.com/card/...
    ```
 
-   The `[[!Card Name]]` tag is sent on its own — that's your Discord bot's
-   auto-embed syntax, and it's left untouched.
+   The second message is the card's `scryfall_uri` straight from the API
+   response — Discord's own link preview renders the card image, no bot
+   syntax needed.
 4. On a successful post, appends `{"name": ..., "date": ...}` to
    `posted_cards.json`.
 

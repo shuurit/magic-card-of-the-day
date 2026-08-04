@@ -3,7 +3,7 @@
 Fetches a random legal, non-token, non-joke card from Scryfall, avoids
 repeating any card posted within the last REPEAT_WINDOW_DAYS days (tracked
 in LOG_FILE), and posts it to Discord as two separate messages: a greeting,
-followed by the [[!Card Name]] embed tag.
+followed by the card's Scryfall page URL (which Discord auto-embeds).
 """
 
 import json
@@ -44,7 +44,6 @@ WEBHOOK_RETRY_DELAY_SECONDS = 3
 GREETING_MESSAGE = (
     "This is Today's Magic Card of the Day!!! Enjoy fellow Spellcasters :man_mage:"
 )
-CARD_TAG_TEMPLATE = "[[!{card_name}]]"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -121,8 +120,8 @@ def fetch_unposted_card() -> dict | None:
             return None
 
         card_name = card.get("name")
-        if not card_name:
-            log.warning("Scryfall response missing a card name; skipping.")
+        if not card_name or not card.get("scryfall_uri"):
+            log.warning("Scryfall response missing a card name or URL; skipping.")
             continue
 
         if was_recently_posted(card_name, posted_entries):
@@ -181,15 +180,15 @@ def main() -> int:
         return 1
 
     card_name = card["name"]
+    card_url = card["scryfall_uri"]
 
     if not post_to_discord(webhook_url, GREETING_MESSAGE):
         log.error("Failed to post greeting message to Discord after retry.")
         return 1
 
-    card_tag = CARD_TAG_TEMPLATE.format(card_name=card_name)
-    if not post_to_discord(webhook_url, card_tag):
+    if not post_to_discord(webhook_url, card_url):
         log.error(
-            "Greeting posted, but failed to post '%s' card tag to Discord after retry.",
+            "Greeting posted, but failed to post '%s' card URL to Discord after retry.",
             card_name,
         )
         return 1
