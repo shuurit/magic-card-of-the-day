@@ -52,29 +52,42 @@ successful post — so the next day's run sees the full history.
 
 ## Schedule
 
-Runs via GitHub Actions daily around 10am Mountain Time, defined in
-[`.github/workflows/daily-card.yml`](.github/workflows/daily-card.yml):
+The workflow ([`.github/workflows/daily-card.yml`](.github/workflows/daily-card.yml))
+has no built-in `schedule:` trigger — only `workflow_dispatch: {}`, which
+means it only runs when triggered manually or via the GitHub REST API.
+Scheduling is handled externally by [cron-job.org](https://cron-job.org),
+which calls that API on a timer.
 
-```yaml
-schedule:
-  - cron: "0 16 * 3-10 *"        # 10am MDT (UTC-6), March-October
-  - cron: "0 17 * 11,12,1,2 *"   # 10am MST (UTC-7), November-February
-```
+### One-time setup
 
-GitHub Actions cron schedules run in fixed UTC and don't observe daylight
-saving, so two rules are used to approximate 10am Mountain time year-round.
-This will be off by an hour during the ~1-week DST transition itself (early
-March and early November), since the month boundary is only an approximation
-of the actual transition date (second Sunday in March / first Sunday in
-November).
+1. **Create a GitHub personal access token** (Settings → Developer settings →
+   Personal access tokens → Fine-grained tokens → Generate new token):
+   - Resource owner: your account. Repository access: only
+     `magic-card-of-the-day`.
+   - Permissions: **Actions → Read and write** (this is the only permission
+     needed to trigger a workflow run).
+   - Set an expiration and put a reminder to renew it before it lapses,
+     otherwise the scheduled runs will silently start failing.
+   - Copy the token (`github_pat_...`) somewhere safe — GitHub only shows it
+     once.
 
-- Edit the cron expressions to change the time or switch to a fixed
-  single-offset schedule (GitHub Actions schedules are always in UTC).
-- You can also trigger a run manually from the Actions tab (or `gh workflow
-  run daily-card.yml`) thanks to the `workflow_dispatch` trigger — handy for
-  testing.
-- Note: GitHub may delay scheduled workflow runs by a few minutes during
-  periods of high load; it's not guaranteed to the second.
+2. **Create a cron-job.org account** and add a new cron job:
+   - **URL:** `https://api.github.com/repos/shuurit/magic-card-of-the-day/actions/workflows/daily-card.yml/dispatches`
+   - **Request method:** `POST`
+   - **Headers:**
+     - `Authorization: Bearer <your fine-grained token>`
+     - `Accept: application/vnd.github+json`
+     - `Content-Type: application/json`
+   - **Body:** `{"ref":"master"}`
+   - **Schedule:** daily at 10:00, timezone `America/Denver`. cron-job.org's
+     timezone field handles the Mountain Time / DST switch for you, so no
+     manual UTC math or split cron rules are needed (unlike GitHub's native
+     scheduler, which only runs in fixed UTC).
+   - A successful trigger gets an HTTP `204` response with an empty body;
+     cron-job.org's execution history will show this per run.
+
+You can also still trigger a run manually any time from the repo's Actions
+tab, or with `gh workflow run daily-card.yml`.
 
 ## Error handling
 

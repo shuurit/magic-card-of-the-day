@@ -1,13 +1,9 @@
 name: Post Magic Card of the Day
 
 on:
-  schedule:
-    # 10am Mountain Time daily. GitHub Actions cron runs in fixed UTC and
-    # doesn't observe DST, so two rules approximate the wall-clock time:
-    # MDT (UTC-6) for Mar-Oct, MST (UTC-7) for Nov-Feb. Off by an hour during
-    # the ~1-week DST transition itself (early Mar / early Nov).
-    - cron: "0 16 * 3-10 *"
-    - cron: "0 17 * 11,12,1,2 *"
+  # Triggered daily by an external cron-job.org job calling the GitHub REST
+  # API's workflow_dispatch endpoint (see README.md for setup). No native
+  # `schedule:` trigger here on purpose, to avoid double-firing.
   workflow_dispatch: {}
 
 permissions:
